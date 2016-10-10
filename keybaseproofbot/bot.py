@@ -27,9 +27,9 @@ def main():
         'lookup', handlers.lookup_start, pass_args=True)
     username_regex = MessageHandler([], handlers.lookup_username)
     cancel_command = CommandHandler('cancel', handlers.cancel)
-    notusername = MessageHandler([], handlers.notusername)
+    notusername = RegexHandler(r'^@([A-Za-z_]+)$', handlers.notusername)
     lookup_conversation = ConversationHandler(
-        [lookup_command], {'enter_kbusername': [username_regex]},
+        [lookup_command], {'enter_username': [username_regex]},
         [cancel_command, notusername])
 
     dispatcher.add_handler(lookup_conversation)
