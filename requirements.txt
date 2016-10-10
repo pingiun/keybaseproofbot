@@ -1,3 +1,4 @@
 python-gnupg==0.3.9
 python-telegram-bot==5.1.0
 requests==2.11.1
+sqlalchemy

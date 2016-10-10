@@ -21,9 +21,10 @@ def check_proof_message(bot, update, entities):
             update.message_id, username)
         return (False, None)
 
-    return check_key(bot, keyobject, update.message.text[entities[1].offset:entities[1]
-                                                .offset + entities[1].length], username, update.message.from_user.id)
-
+    return check_key(bot, keyobject,
+                     update.message.text[entities[1].offset:entities[1]
+                                         .offset + entities[1].length],
+                     username, update.message.from_user.id)
 
 
 def check_key(bot, proof_object, signed_block, username, user_id):
@@ -37,8 +38,9 @@ def check_key(bot, proof_object, signed_block, username, user_id):
     # Check if username in JSON object is the same as sending username and
     # get the keybase.io username from JSON object
     try:
-        if proof_object['body']['service']['name'] != 'telegram' or proof_object[
-                'body']['service']['username'] != username:
+        if proof_object['body']['service'][
+                'name'] != 'telegram' or proof_object['body']['service'][
+                    'username'] != username:
             logging.warning(
                 "Proof with user id %s with username %s does not contain the right username.",
                 user_id, username)
@@ -49,8 +51,8 @@ def check_key(bot, proof_object, signed_block, username, user_id):
         else:
             raise NotImplementedError
 
-        assert(len(proof_object['body']['key']['fingerprint']) == 40)
-        assert(int(proof_object['body']['key']['fingerprint'], 16))
+        assert (len(proof_object['body']['key']['fingerprint']) == 40)
+        assert (int(proof_object['body']['key']['fingerprint'], 16))
     except (KeyError, AssertionError, ValueError):
         logging.warning(
             "Proof with user id %s with username %s does not have the required fields.",
@@ -63,7 +65,9 @@ def check_key(bot, proof_object, signed_block, username, user_id):
     try:
         r = requests.get('https://keybase.io/{}/key.asc'.format(
             keybaseusername))
-        gpg = gnupg.GPG(gnupghome='./keys', keyring='pubring.gpg', secret_keyring='secring.gpg')
+        gpg = gnupg.GPG(gnupghome='./keys',
+                        keyring='pubring.gpg',
+                        secret_keyring='secring.gpg')
         gpg.import_keys(r.text)
     except Exception as e:
         # TODO: Reageer goed op verschillende keybase errors
@@ -87,15 +91,19 @@ def check_key(bot, proof_object, signed_block, username, user_id):
 
 def lookup_proof(bot, telegram_username=None):
     print("Looking up proof for", telegram_username)
-    proof = Proof.query.filter(Proof.telegram_username == telegram_username).first()
+    proof = Proof.query.filter(
+        Proof.telegram_username == telegram_username).first()
 
     print(proof)
 
     if proof:
-        check_key(bot, json.loads(proof.proof_object), proof.signed_block, proof.telegram_username, proof.user_id)
+        check_key(bot,
+                  json.loads(proof.proof_object), proof.signed_block,
+                  proof.telegram_username, proof.user_id)
         return proof
     else:
         return None
+
 
 def store_proof(proof, signed_block, update):
     try:
