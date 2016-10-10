@@ -1,0 +1,2 @@
+TG_TOKEN = '4123123:asdbaweawtAascASaDASdafAs'
+DATABASE_URL = 'sqlite:///proofs.db'
