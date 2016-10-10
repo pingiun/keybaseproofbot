@@ -213,15 +213,39 @@ def check_block(bot, update):
             text="Your message is not a valid gpg message.")
         return ConversationHandler.END
 
-    succes, proof = check_key(
-        bot, temp_proof_data[update.message.chat_id], update.message.text,
-        update.message.from_user.username, update.message.chat_id)
+    proof_data = temp_proof_data[update.message.chat_id]
+    fingerprint = ' '.join([
+        proof_data['body']['key']['fingerprint'][i:i + 4].upper()
+        for i in range(0, len(proof_data['body']['key']['fingerprint']), 4)
+    ])
+    succes, proof = check_key(bot, proof_data, update.message.text,
+                              update.message.from_user.username,
+                              update.message.chat_id)
 
     if succes:
         bot.sendMessage(
             chat_id=update.message.chat_id,
             text="Your signed block is valid. You can now copy and paste the following "
             "message to @KeybaseProofs.")
+        bot.sendMessage(
+            chat_id=update.message.chat_id,
+            text="Keybase proof\n\n"
+            "I hereby claim:\n\n"
+            "- I am @{} on telegram.\n"
+            "- I am {} on keybase.\n"
+            "- I have a public key whose fingerprint is {}\n\n"
+            "To claim this, I am signing this object:\n"
+            "```\n{}\n```\n"
+            "with the key from above, yielding:\n"
+            "```\n{}\n```\n"
+            "Finally, I am proving my Telegram account by posting it in @KeybaseProofs".
+            format(
+                update.message.from_user.username,
+                proof_data['body']['key']['username'],
+                fingerprint,
+                json.dumps(
+                    proof_data, sort_keys=True, indent=4),
+                update.message.text))
     elif proof == 'invalid_sign':
         bot.sendMessage(
             chat_id=update.message.chat_id,
