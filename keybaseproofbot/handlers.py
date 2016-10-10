@@ -204,6 +204,8 @@ def make_json(bot, update):
 
 @filter_private
 def check_block(bot, update):
+    if update.message.text == '/cancel':
+        return cancel()
     match = re.match(
         r'-----BEGIN PGP MESSAGE-----\n(.*\n)+-----END PGP MESSAGE-----',
         update.message.text, re.MULTILINE)
