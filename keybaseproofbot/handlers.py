@@ -123,7 +123,7 @@ def newproof(bot, update, args):
 
     bot.sendMessage(
         chat_id=update.message.chat_id,
-        text="Now enter a keybase username to connect.")
+        text="Please enter a keybase username to connect to your Telegram account.")
     return 'enter_kbusername'
 
 
@@ -195,7 +195,7 @@ def make_json(bot, update):
 
     bot.sendMessage(
         chat_id=update.message.chat_id,
-        text="Now please sign the following with your secret key: ```\n{}\n```".
+        text="Now please sign the following with your secret key and send it back: ```\n{}\n```".
         format(json_block),
         parse_mode=ParseMode.MARKDOWN)
 
