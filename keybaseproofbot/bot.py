@@ -1,6 +1,6 @@
 import logging
 
-from telegram.ext import CommandHandler, ConversationHandler, Filters, MessageHandler, RegexHandler, Updater
+from telegram.ext import CommandHandler, ConversationHandler, Filters, InlineHanderl, MessageHandler, RegexHandler, Updater
 
 from keybaseproofbot.database import db_session, init_db
 from keybaseproofbot import handlers
@@ -15,7 +15,7 @@ def main():
     init_db()
     updater = Updater(token=config['TG_TOKEN'])
     dispatcher = updater.dispatcher
-    
+
     # Private handlers:
     start_handler = CommandHandler('start', handlers.start)
     dispatcher.add_handler(start_handler)
@@ -25,9 +25,13 @@ def main():
     cancel_command = CommandHandler('cancel', handlers.cancel)
     notusername = MessageHandler([], handlers.notusername)
     lookup_conversation = ConversationHandler([lookup_command], {'enter_username': [username_regex]}, [cancel_command, notusername])
-    
+
     dispatcher.add_handler(lookup_conversation)
-    
+
+    # Inline handler:
+    inline_handler = InlineHandler(handlers.inline_handler)
+    dispatcher.add_handler(inline_handler)
+
     # Group handlers:
     proofmsg_handler = MessageHandler(
         [CustomFilter.supergrouptext], handlers.proof_message_handle, allow_edited=True)

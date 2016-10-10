@@ -23,7 +23,7 @@ def check_proof_message(bot, update, entities):
 
     return check_key(bot, keyobject, update.message.text[entities[1].offset:entities[1]
                                                 .offset + entities[1].length], username, update.message.from_user.id)
-    
+
 
 
 def check_key(bot, proof_object, signed_block, username, user_id):
@@ -90,7 +90,7 @@ def lookup_proof(bot, telegram_username=None):
     proof = Proof.query.filter(Proof.telegram_username == telegram_username).first()
 
     print(proof)
-    
+
     if proof:
         check_key(bot, json.loads(proof.proof_object), proof.signed_block, proof.telegram_username, proof.user_id)
         return proof

@@ -52,6 +52,8 @@ def other_message_handle(bot, update):
     bot.kickChatMember(
         chat_id=update.message.chat_id, user_id=update.message.from_user.id)
 
+def inline_handler(bot, update):
+    
 
 @filter_private
 def start(bot, update):
