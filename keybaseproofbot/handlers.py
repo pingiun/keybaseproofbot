@@ -248,6 +248,10 @@ def lookup_start(bot, update, args):
 
 @filter_private
 def lookup_username(bot, update):
+    match = re.match(r'^@([A-Za-z_]+)$', update.message.text)
+    if not match:
+        return notusername(bot, update)
+    
     bot.sendMessage(
         chat_id=update.message.chat_id,
         text="Identifying " + update.message.text)
