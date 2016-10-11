@@ -27,10 +27,9 @@ def main():
         'lookup', handlers.lookup_start, pass_args=True)
     username_regex = MessageHandler([], handlers.lookup_username)
     cancel_command = CommandHandler('cancel', handlers.cancel)
-    notusername = RegexHandler(r'^@([A-Za-z_]+)$', handlers.notusername)
     lookup_conversation = ConversationHandler(
         [lookup_command], {'enter_username': [username_regex]},
-        [cancel_command, notusername])
+        [cancel_command])
 
     dispatcher.add_handler(lookup_conversation)
 
@@ -38,11 +37,10 @@ def main():
         'newproof', handlers.newproof, pass_args=True)
     kbusername_handler = MessageHandler([], handlers.make_json)
     signed_block_regex = MessageHandler([], handlers.check_block)
-    notkbusername = MessageHandler([], handlers.notkbusername)
     newproof_conversation = ConversationHandler([newproof_command], {
         'enter_kbusername': [kbusername_handler],
         'sign_block': [signed_block_regex]
-    }, [cancel_command, notkbusername])
+    }, [cancel_command])
     dispatcher.add_handler(newproof_conversation)
 
     # Inline handler:

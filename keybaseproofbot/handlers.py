@@ -123,7 +123,8 @@ def newproof(bot, update, args):
 
     bot.sendMessage(
         chat_id=update.message.chat_id,
-        text="Please enter a keybase username to connect to your Telegram account.")
+        text="Please enter a keybase username to connect to your Telegram account."
+    )
     return 'enter_kbusername'
 
 
@@ -132,11 +133,9 @@ temp_proof_data = {}
 
 @filter_private
 def make_json(bot, update):
-    match = re.match(r'(?:(?:(?:https:\/\/)?keybase.io\/)|@)?([A-Za-z_]+)',
+    match = re.match(r'^(?:(?:(?:https:\/\/)?keybase.io\/)|@)?([A-Za-z_]+)$',
                      update.message.text)
     if not match:
-        print(update.message.text, "doesn't match",
-              r'(?:(?:(?:https:\/\/)?keybase.io\/)|@)?([A-Za-z_]+)')
         return notkbusername()
     username = match.group(0)
 
@@ -164,6 +163,7 @@ def make_json(bot, update):
         bot.sendMessage(
             chat_id=update.message.chat_id,
             text="Your username was not found on Keybase!")
+        return
 
     try:
         data = {
@@ -204,10 +204,11 @@ def make_json(bot, update):
 
 @filter_private
 def check_block(bot, update):
-    if update.message.text == '/cancel':
+    if update.message.text.startswith('/cancel'):
         return cancel()
+    update.message.text.replace('—', '--')
     match = re.match(
-        r'-----BEGIN PGP MESSAGE-----\n(.*\n)+-----END PGP MESSAGE-----',
+        r'^-----BEGIN PGP MESSAGE-----\n(.*\n)+-----END PGP MESSAGE-----$',
         update.message.text, re.MULTILINE)
     if not match:
         bot.sendMessage(
@@ -216,6 +217,9 @@ def check_block(bot, update):
         return ConversationHandler.END
 
     proof_data = temp_proof_data[update.message.chat_id]
+    # See mom, i clean up after myself:
+    del temp_proof_data[update.message.chat_id]
+
     fingerprint = ' '.join([
         proof_data['body']['key']['fingerprint'][i:i + 4].upper()
         for i in range(0, len(proof_data['body']['key']['fingerprint']), 4)
@@ -261,10 +265,9 @@ def check_block(bot, update):
 
 @filter_private
 def lookup_start(bot, update, args):
-    if len(args) == 1:
-        if re.match(r'^@([A-Za-z_]+)$', args[0]):
-            update.message.text = args[0]
-            return lookup_username(bot, update)
+    if len(args) >= 1:
+        update.message.text = ' '.join(args)
+        return lookup_username(bot, update)
 
     bot.sendMessage(
         chat_id=update.message.chat_id,

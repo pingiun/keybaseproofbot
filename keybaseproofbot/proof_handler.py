@@ -31,9 +31,9 @@ def check_key(bot, proof_object, signed_block, username, user_id):
     try:
         chat = bot.getChat(user_id)
         if chat['username'] != username:
-            return (False, None)
+            return (False, 'not_username')
     except TelegramError as e:
-        return (False, None)
+        return (False, 'not_username')
 
     # Check if username in JSON object is the same as sending username and
     # get the keybase.io username from JSON object
@@ -44,7 +44,7 @@ def check_key(bot, proof_object, signed_block, username, user_id):
             logging.warning(
                 "Proof with user id %s with username %s does not contain the right username.",
                 user_id, username)
-            return (False, None)
+            return (False, 'not_username')
 
         if proof_object['body']['key']['host'] == 'keybase.io':
             keybaseusername = proof_object['body']['key']['username']
