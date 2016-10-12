@@ -33,6 +33,15 @@ def main():
 
     dispatcher.add_handler(lookup_conversation)
 
+    forwardproof_command = CommandHandler(
+        'forwardproof', handlers.forward_proof_start, pass_args=True)
+    forwardproof = MessageHandler([], handlers.forward_proof)
+    forwardproof_conversation = ConversationHandler(
+        [forwardproof_command], {'enter_username': [forwardproof]},
+        [cancel_command])
+
+    dispatcher.add_handler(forwardproof_conversation)
+
     newproof_command = CommandHandler(
         'newproof', handlers.newproof, pass_args=True)
     kbusername_handler = MessageHandler([], handlers.make_json)

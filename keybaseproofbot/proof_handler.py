@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 
 import gnupg
 import requests
@@ -88,18 +89,49 @@ def check_key(bot, proof_object, signed_block, username, user_id):
     except json.decoder.JSONDecodeError:
         logging.warning("Decoded message is not a valid JSON object")
 
+regexes = {
+    'keybase': re.compile(r'^(?:keybase=)?(?:(?:(?:https:\/\/)?keybase.io\/)|@)?([A-Za-z_]+)$'),
+    'telegram': re.compile(r'^telegram=(?:@)?([A-Za-z_]+)$'),
+    'email': re.compile(r'^email=([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)$'),
+    'github': re.compile(r'^github=([A-Za-z_][a-zA-Z0-9_-]+)$'),
+    'twitter': re.compile(r'^twitter=(?:@)?([A-Za-z_][a-zA-Z0-9-_]+)$'),
+    'reddit': re.compile(r'^reddit=(?:(?:/)?u/)?([A-Za-z_][a-zA-Z0-9-]+)$'),
+    'hackernews': re.compile(r'^hackernews=([A-Za-z_][a-zA-Z0-9_-]+)$'),
+    'coinbase': re.compile(r'^coinbase=([A-Za-z_][a-zA-Z0-9_-]+)$'),
+    'key_fingerprint': re.compile(r'fingerprint=[A-Fa-f0-9]{40}')
+}
 
-def lookup_proof(bot, telegram_username=None):
-    print("Looking up proof for", telegram_username)
+
+def lookup_proof(bot, query=None, telegram_username='%'):
+    keybase_username = '%'
+    if telegram_username == '%':
+        searchvalues = dict()
+
+        for word in query.split():
+            for name, regex in regexes.items():
+                match = regex.match(word)
+                if match:
+                    if name == 'telegram':
+                        telegram_username = match.group(1)
+                    elif name == 'keybase':
+                        keybase_username = match.group(1)
+                    elif name == 'email':
+                        pass
+                    else:
+                        searchvalues[name] = match.group(1)
+
+        if searchvalues:
+            r = requests.get('https://keybase.io/_/api/1.0/user/lookup.json?fields=basics&' + 
+                '&'.join(['{}={}'.format(name, value) for name, value in searchvalues.items()]))
+            keybase_username = r.json()['them'][0]['basics']['username']
+
+        if keybase_username == '%' and telegram_username == '%':
+            return None
+
     proof = Proof.query.filter(
-        Proof.telegram_username == telegram_username).first()
-
-    print(proof)
+        Proof.telegram_username.like(telegram_username), Proof.keybase_username.like(keybase_username)).first()
 
     if proof:
-        check_key(bot,
-                  json.loads(proof.proof_object), proof.signed_block,
-                  proof.telegram_username, proof.user_id)
         return proof
     else:
         return None

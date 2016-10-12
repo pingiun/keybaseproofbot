@@ -86,6 +86,7 @@ def start(bot, update):
         "You can control me by sending these commands:\n\n"
         "/newproof - build a proof message to post in @KeybaseProofs\n"
         "/lookup - check if a user has proved their identity on Telegram\n"
+        "/forwardproof - the bot forwards the proof message for a certain Telegram user\n"
         "/cancel - cancel the current command",
         parse_mode=ParseMode.MARKDOWN)
 
@@ -271,17 +272,15 @@ def lookup_start(bot, update, args):
 
     bot.sendMessage(
         chat_id=update.message.chat_id,
-        text="Please enter a username (with @) to search for.")
+        text="Please enter a query to search for.")
     return 'enter_username'
 
 
 @filter_private
 def lookup_username(bot, update):
-    bot.sendMessage(
-        chat_id=update.message.chat_id,
-        text="Identifying " + update.message.text)
     bot.sendChatAction(chat_id=update.message.chat_id, action='typing')
-    info = lookup_proof(bot, telegram_username=update.message.text[1:])
+    info = lookup_proof(bot, query=update.message.text)
+
     if info:
         proof_object = json.loads(info.proof_object)
         fingerprint = ' '.join([
@@ -291,14 +290,67 @@ def lookup_username(bot, update):
         ])
         bot.sendMessage(
             chat_id=update.message.chat_id,
+            text=Emoji.BLACK_RIGHTWARDS_ARROW +
+            " Identifying https://keybase.io/{}".format(info.keybase_username))
+        bot.sendMessage(
+            chat_id=update.message.chat_id,
             text=Emoji.HEAVY_CHECK_MARK + " public key fingerprint: " +
             fingerprint)
+        bot.sendChatAction(chat_id=update.message.chat_id, action='typing')
+        succes, proof = check_key(bot,
+                  json.loads(info.proof_object), info.signed_block,
+                  info.telegram_username, info.user_id)
+        if succes:
+            bot.sendMessage(
+                chat_id=update.message.chat_id,
+                text=Emoji.HEAVY_CHECK_MARK +
+                " \"@{}\" on telegram".format(info.telegram_username))
+        else:
+            if proof == 'not_username':
+                bot.sendMessage(chat_id=update.message.chat_id,
+                    text=Emoji.CROSS_MARK + "WARNING: \"{}\" on telegram may have deleted their account, or changed their username."
+                    "The user may not be who they claim they are!")
+            elif proof == 'invalid_sign':
+                bot.sendMessage(chat_id=update.message.chat_id,
+                    text=Emoji.CROSS_MARK + "WARNING: \"{}\" on telegram has not signed their proof correctly."
+                    "The user may not be who they claim they are!")
+            else:
+                bot.sendMessage(chat_id=update.message.chat_id,
+                    text="Could not verify Telegram username, you are advised to check for yourself. (Internal error)")
+                logging.error("Check proof failed for lookup. Return message: %s", proof)
         bot.sendMessage(
-            chat_id=update.message.chat_id, text="Verification message:")
-        bot.forwardMessage(
             chat_id=update.message.chat_id,
-            from_chat_id=info.chat_id,
-            message_id=info.message_id)
+            text=Emoji.BLACK_RIGHTWARDS_ARROW +
+            "If you want to check the proof message yourself, use the /forwardproof command."
+        )
     else:
-        bot.sendMessage(chat_id=update.message.chat_id, text="No proof found.")
+        bot.sendMessage(chat_id=update.message.chat_id, text="No proof found for your query.")
     return ConversationHandler.END
+
+
+@filter_private
+def forward_proof_start(bot, update, args):
+    if len(args) >= 1:
+        update.message.text = ' '.join(args)
+        return lookup_username(bot, update)
+
+    bot.sendMessage(
+        chat_id=update.message.chat_id,
+        text="Please enter a username to search for.")
+    return 'enter_username'
+
+
+@filter_private
+def forward_proof(bot, update):
+    match = re.match(r'(?:@)?([A-Za-z_]+)', update.message.text)
+    if match:
+        info = lookup_proof(bot, telegram_username=match.group(0))
+        if info:
+            bot.sendMessage(chat_id=update.message.chat_id, text="This is the proof message for that user:")
+            bot.forwardMessage(chat_id=update.message.chat_id, from_chat_id=info.chat_id, message_id=info.message_id)
+        else:
+            bot.sendMessage(chat_id=update.message.chat_id, text="No proof found for your query.")
+        return ConversationHandler.END
+    else:
+        bot.sendMessage(chat_id=update.message.chat_id,
+            text="That is not a valid Telegram username, try again.")
