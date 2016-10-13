@@ -5,6 +5,8 @@ import re
 import gnupg
 import requests
 
+from sqlalchemy import or_
+
 from keybaseproofbot.database import db_session
 from keybaseproofbot.models import Proof
 
@@ -89,9 +91,10 @@ def check_key(bot, proof_object, signed_block, username, user_id):
     except json.decoder.JSONDecodeError:
         logging.warning("Decoded message is not a valid JSON object")
 
+
 regexes = {
     'keybase': re.compile(r'^(?:keybase=)?(?:(?:(?:https:\/\/)?keybase.io\/)|@)?([A-Za-z_]+)$'),
-    'telegram': re.compile(r'^telegram=(?:@)?([A-Za-z_]+)$'),
+    'telegram': re.compile(r'^(?:telegram=(?:@)?)?([A-Za-z_]+)$'),
     'email': re.compile(r'^email=([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)$'),
     'github': re.compile(r'^github=([A-Za-z_][a-zA-Z0-9_-]+)$'),
     'twitter': re.compile(r'^twitter=(?:@)?([A-Za-z_][a-zA-Z0-9-_]+)$'),
@@ -100,7 +103,6 @@ regexes = {
     'coinbase': re.compile(r'^coinbase=([A-Za-z_][a-zA-Z0-9_-]+)$'),
     'key_fingerprint': re.compile(r'fingerprint=[A-Fa-f0-9]{40}')
 }
-
 
 def lookup_proof(bot, query=None, telegram_username='%'):
     keybase_username = '%'
@@ -128,13 +130,13 @@ def lookup_proof(bot, query=None, telegram_username='%'):
         if keybase_username == '%' and telegram_username == '%':
             return None
 
-    proof = Proof.query.filter(
-        Proof.telegram_username.like(telegram_username), Proof.keybase_username.like(keybase_username)).first()
-
-    if proof:
-        return proof
+    if keybase_username != '%' and telegram_username == '%':
+        proof = Proof.query.filter(or_(Proof.telegram_username == keybase_username, Proof.keybase_username == keybase_username))
     else:
-        return None
+        proof = Proof.query.filter(
+            Proof.telegram_username.like(telegram_username), Proof.keybase_username.like(keybase_username)).first()
+
+    return proof
 
 
 def store_proof(proof, signed_block, update):
