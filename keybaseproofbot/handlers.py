@@ -328,7 +328,7 @@ def lookup_username(bot, update):
 def forward_proof_start(bot, update, args):
     if len(args) >= 1:
         update.message.text = ' '.join(args)
-        return lookup_username(bot, update)
+        return forward_proof(bot, update)
 
     bot.sendMessage(
         chat_id=update.message.chat_id,
