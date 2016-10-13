@@ -6,7 +6,6 @@ import re
 
 import requests
 
-from telegram import Emoji
 from telegram import InlineQueryResultArticle, InputTextMessageContent, ParseMode
 from telegram.ext import ConversationHandler
 
@@ -67,8 +66,8 @@ def inline_handler(bot, update):
             id=proof.telegram_username,
             title=proof.telegram_username,
             input_message_content=InputTextMessageContent(
-                "{} https://keybase.io/{} is @{} on Telegram. You can talk to @KeybaseProofBot for more information, or check out @KeybaseProofs.".
-                format(Emoji.HEAVY_CHECK_MARK, proof.keybase_username,
+                "✅ https://keybase.io/{} is @{} on Telegram. You can talk to @KeybaseProofBot for more information, or check out @KeybaseProofs.".
+                format(proof.keybase_username,
                        proof.telegram_username))) for proof in proofs
     ]
 
@@ -290,11 +289,10 @@ def lookup_username(bot, update):
         ])
         bot.sendMessage(
             chat_id=update.message.chat_id,
-            text=Emoji.BLACK_RIGHTWARDS_ARROW +
-            " Identifying https://keybase.io/{}".format(info.keybase_username))
+            text= "▶ Identifying https://keybase.io/{}".format(info.keybase_username))
         bot.sendMessage(
             chat_id=update.message.chat_id,
-            text=Emoji.HEAVY_CHECK_MARK + " public key fingerprint: " +
+            text="✅ public key fingerprint: " +
             fingerprint)
         bot.sendChatAction(chat_id=update.message.chat_id, action='typing')
         succes, proof = check_key(bot,
@@ -303,16 +301,15 @@ def lookup_username(bot, update):
         if succes:
             bot.sendMessage(
                 chat_id=update.message.chat_id,
-                text=Emoji.HEAVY_CHECK_MARK +
-                " \"@{}\" on telegram".format(info.telegram_username))
+                text= "✅ \"@{}\" on telegram".format(info.telegram_username))
         else:
             if proof == 'not_username':
                 bot.sendMessage(chat_id=update.message.chat_id,
-                    text=Emoji.CROSS_MARK + "WARNING: \"{}\" on telegram may have deleted their account, or changed their username."
+                    text=Emoji.CROSS_MARK + " WARNING: \"{}\" on telegram may have deleted their account, or changed their username."
                     "The user may not be who they claim they are!")
             elif proof == 'invalid_sign':
                 bot.sendMessage(chat_id=update.message.chat_id,
-                    text=Emoji.CROSS_MARK + "WARNING: \"{}\" on telegram has not signed their proof correctly."
+                    text=Emoji.CROSS_MARK + " WARNING: \"{}\" on telegram has not signed their proof correctly."
                     "The user may not be who they claim they are!")
             else:
                 bot.sendMessage(chat_id=update.message.chat_id,
@@ -320,8 +317,7 @@ def lookup_username(bot, update):
                 logging.error("Check proof failed for lookup. Return message: %s", proof)
         bot.sendMessage(
             chat_id=update.message.chat_id,
-            text=Emoji.BLACK_RIGHTWARDS_ARROW +
-            "If you want to check the proof message yourself, use the /forwardproof command."
+            text= "▶ If you want to check the proof message yourself, use the /forwardproof command."
         )
     else:
         bot.sendMessage(chat_id=update.message.chat_id, text="No proof found for your query.")
