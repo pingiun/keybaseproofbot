@@ -94,7 +94,7 @@ def check_key(bot, proof_object, signed_block, username, user_id):
 
 regexes = {
     'keybase': re.compile(r'^(?:keybase=)?(?:(?:(?:https:\/\/)?keybase.io\/)|@)?([A-Za-z_]+)$'),
-    'telegram': re.compile(r'^(?:telegram=(?:@)?)?([A-Za-z_]+)$'),
+    'telegram': re.compile(r'^telegram=(?:@)?([A-Za-z_]+)$'),
     'email': re.compile(r'^email=([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)$'),
     'github': re.compile(r'^github=([A-Za-z_][a-zA-Z0-9_-]+)$'),
     'twitter': re.compile(r'^twitter=(?:@)?([A-Za-z_][a-zA-Z0-9-_]+)$'),
@@ -131,7 +131,7 @@ def lookup_proof(bot, query=None, telegram_username='%'):
             return None
 
     if keybase_username != '%' and telegram_username == '%':
-        proof = Proof.query.filter(or_(Proof.telegram_username == keybase_username, Proof.keybase_username == keybase_username)).first()
+        proof = Proof.query.filter(Proof.telegram_username.like(keybase_username), Proof.keybase_username.like(keybase_username)).first()
     else:
         proof = Proof.query.filter(
             Proof.telegram_username.like(telegram_username), Proof.keybase_username.like(keybase_username)).first()
