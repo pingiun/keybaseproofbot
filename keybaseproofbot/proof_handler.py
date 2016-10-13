@@ -131,7 +131,7 @@ def lookup_proof(bot, query=None, telegram_username='%'):
             return None
 
     if keybase_username != '%' and telegram_username == '%':
-        proof = Proof.query.filter(or_(Proof.telegram_username == keybase_username, Proof.keybase_username == keybase_username))
+        proof = Proof.query.filter(or_(Proof.telegram_username == keybase_username, Proof.keybase_username == keybase_username)).first()
     else:
         proof = Proof.query.filter(
             Proof.telegram_username.like(telegram_username), Proof.keybase_username.like(keybase_username)).first()
