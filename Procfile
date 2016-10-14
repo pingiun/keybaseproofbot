@@ -1,1 +1,1 @@
-web: python -m keybaseproofbot
+worker: python -m keybaseproofbot
