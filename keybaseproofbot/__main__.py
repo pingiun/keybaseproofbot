@@ -5,7 +5,7 @@ import sys
 from keybaseproofbot.config import config
 
 if __name__ == "__main__":
-    if os.getenv('FLYNN_POSTGRESS'):
+    if os.getenv('FLYNN_POSTGRES'):
         setattr(config, 'DATABASE_URL', os.getenv('DATABASE_URL'))
         setattr(config, 'GROUP_ID', os.getenv('GROUP_ID'))
         setattr(config, 'TG_TOKEN', os.getenv('TG_TOKEN'))
