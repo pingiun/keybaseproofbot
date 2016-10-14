@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 
 from keybaseproofbot.config import config
@@ -15,6 +16,11 @@ if __name__ == "__main__":
         help="Config file to use")
     args = parser.parse_args()
 
-    exec(args.config.read(), config)
+    if os.getenv('FLYNN_POSTGRESS'):
+        setattr(config, 'DATABASE_URL', os.getenv('DATABASE_URL'))
+        setattr(config, 'GROUP_ID', os.getenv('GROUP_ID'))
+        setattr(config, 'TG_TOKEN', os.getenv('TG_TOKEN'))
+    else:
+        exec(args.config.read(), config)
     from keybaseproofbot.bot import main
     main()
