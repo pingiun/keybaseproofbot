@@ -22,7 +22,7 @@ def proof_message_handle(bot, update):
         return
 
     entities = [
-        entity for entity in update.message.entities if entity.type == 'pre'
+        entity for entity in update.message.entities if entity.type == 'pre' or entity.type == 'code'
     ]
     if len(entities) != 2:
         logging.warning(
