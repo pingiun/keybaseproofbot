@@ -12,6 +12,7 @@ from telegram.ext import ConversationHandler
 from keybaseproofbot.models import Proof
 from keybaseproofbot.proof_handler import check_proof_message, lookup_proof, store_proof, check_key
 from keybaseproofbot.wrapperfilter import filter_group, filter_private
+from keybaseproofbot.utils import fix_dashes
 
 
 @filter_group
@@ -206,17 +207,19 @@ def make_json(bot, update):
 def check_block(bot, update):
     if update.message.text.startswith('/cancel'):
         return cancel()
-    update.message.text.replace('—', '--')
-    match = re.match(
-        r'^-----BEGIN PGP MESSAGE-----\n(.*\n)+-----END PGP MESSAGE-----$',
-        update.message.text, re.MULTILINE)
-    if not match:
+
+    lines = update.message.text.split('\n')
+    if len(lines) > 1 and not ("BEGIN PGP MESSAGE" in lines[0] and "END PGP MESSAGE" in lines[-1]):
         bot.sendMessage(
             chat_id=update.message.chat_id,
             text="Your message is not a valid gpg message.")
         return ConversationHandler.END
+    del lines
+
+    pgp_content = fix_dashes(update.message.text)
 
     proof_data = temp_proof_data[update.message.chat_id]
+    
     # See mom, i clean up after myself:
     del temp_proof_data[update.message.chat_id]
 
@@ -224,7 +227,7 @@ def check_block(bot, update):
         proof_data['body']['key']['fingerprint'][i:i + 4].upper()
         for i in range(0, len(proof_data['body']['key']['fingerprint']), 4)
     ])
-    succes, proof = check_key(bot, proof_data, update.message.text,
+    succes, proof = check_key(bot, proof_data, pgp_content,
                               update.message.from_user.username,
                               update.message.chat_id)
 
@@ -251,7 +254,7 @@ def check_block(bot, update):
                 fingerprint,
                 json.dumps(
                     proof_data, sort_keys=True, indent=4),
-                update.message.text))
+                pgp_content))
     elif proof == 'invalid_sign':
         bot.sendMessage(
             chat_id=update.message.chat_id,
