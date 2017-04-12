@@ -7,7 +7,7 @@ def filter_group(f):
 
     @wraps(f)
     def wrapper(bot, update, *args, **kwargs):
-        if update.message.chat_id == config['GROUP_ID']:
+        if str(update.message.chat_id) == str(config['GROUP_ID']):
             return f(bot, update, *args, **kwargs)
         else:
             bot.leaveChat(chat_id=update.message.chat_id)
