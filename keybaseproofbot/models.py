@@ -1,15 +1,15 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, BigInteger, String
 
 from keybaseproofbot.database import Base
 
 
 class Proof(Base):
     __tablename__ = 'proofs'
-    user_id = Column(Integer, primary_key=True)
+    user_id = Column(BigInteger, primary_key=True)
     keybase_username = Column(String)
     telegram_username = Column(String)
-    chat_id = Column(Integer)
-    message_id = Column(Integer)
+    chat_id = Column(BigInteger)
+    message_id = Column(BigInteger)
     proof_object = Column(String)
     signed_block = Column(String)
 
