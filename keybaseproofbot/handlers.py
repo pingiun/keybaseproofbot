@@ -186,7 +186,7 @@ def make_json(bot, update):
             'tag': 'signature'
         }
         temp_proof_data[update.message.chat_id] = data
-        json_block = json.dumps(data)
+        json_block = json.dumps(data, indent=4)
     except Exception as e:
         logging.exception(e)
         bot.sendMessage(
@@ -195,7 +195,7 @@ def make_json(bot, update):
 
     bot.sendMessage(
         chat_id=update.message.chat_id,
-        text="Now please sign the following with your secret key and send it back: ```\n{}\n```".
+        text="Now please sign the following with your secret key and send it back:\n```\n{}\n```".
         format(json_block),
         parse_mode=ParseMode.MARKDOWN)
 
