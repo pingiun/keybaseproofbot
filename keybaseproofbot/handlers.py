@@ -194,10 +194,12 @@ def make_json(bot, update):
             chat_id=update.message.chat_id, text="Something went wrong!")
         return
 
+    bot.sendMessage(chat_id=update.message.chat_id,
+        text="Okay, please paste the following into your terminal (where you can use the keybase cli client) and paste the output here.")
     bot.sendMessage(
         chat_id=update.message.chat_id,
-        text="Now please sign the following with your secret key and send it back:\n```\n{}\n```".
-        format(json_block),
+        text="```\nkeybase pgp sign --message \"{}\"\n```".
+        format(json_block.replace(r'"', r'\"')),
         parse_mode=ParseMode.MARKDOWN)
 
     return 'sign_block'
