@@ -1,0 +1,28 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: keybaseproofbot
+spec:
+  selector:
+    matchLabels:
+      app: keybaseproofbot
+  template:
+    metadata:
+      labels:
+        app: keybaseproofbot
+    spec:
+      containers:
+      - image: eu.gcr.io/telegram-bots-179510/keybaseproofbot
+        name: keybaseproofbot
+        env:
+        - name: TG_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: telegram-keybaseproofbot
+              key: token
+        - name: DATABASE_HOST
+          value: postgres
+        - name: DATABASE_USER
+          value: keybaseproofs
+        - name: DATABASE_DATABASE
+          value: keybaseproofbot

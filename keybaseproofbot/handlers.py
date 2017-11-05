@@ -29,6 +29,7 @@ def proof_message_handle(bot, update):
         logging.warning(
             "Message with message id %s from sender %s does not have two pre blocks.",
             update.message.message_id, update.message.from_user.username)
+        bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.id)
         return
 
     succes, proof = check_proof_message(bot, update, entities)
@@ -45,16 +46,18 @@ def proof_message_handle(bot, update):
             chat_id=update.message.chat_id,
             text="Your proof is not valid. Paging @pingiun to take a look at it.",
             reply_to_message_id=update.message.message_id)
+        bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.id)
     elif proof == 'notimplemented':
         bot.sendMessage(
             chat_id=update.message.chat_id,
             text="Using other hosts than keybase.io is not supported yet.")
+        bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.id)
 
 
 @filter_group
 def other_message_handle(bot, update):
-    bot.kickChatMember(
-        chat_id=update.message.chat_id, user_id=update.message.from_user.id)
+    bot.deleteMessage(
+        chat_id=update.message.chat_id, message_id=update.message.id)
 
 
 def inline_handler(bot, update):
@@ -82,7 +85,7 @@ def start(bot, update):
         text="Hello, welcome to the (unofficial) Keybase Telegram Proving Bot. "
         "I can help you search for Telegram user proofs. Please read this "
         "webpage for instructions on how to prove yourself: "
-        "[https://pingiun/post/telegram-proofs](https://pingiun/post/telegram-proofs)\n\n"
+        "[https://pingiun.com/post/telegram-proofs](https://pingiun.com/post/telegram-proofs)\n\n"
         "You can control me by sending these commands:\n\n"
         "/newproof - build a proof message to post in @KeybaseProofs\n"
         "/lookup - check if a user has proved their identity on Telegram\n"

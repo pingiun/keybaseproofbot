@@ -25,7 +25,7 @@ def main():
 
     lookup_command = CommandHandler(
         'lookup', handlers.lookup_start, pass_args=True)
-    username_regex = MessageHandler([], handlers.lookup_username)
+    username_regex = MessageHandler(None, handlers.lookup_username)
     cancel_command = CommandHandler('cancel', handlers.cancel)
     lookup_conversation = ConversationHandler(
         [lookup_command], {'enter_username': [username_regex]},
@@ -35,7 +35,7 @@ def main():
 
     forwardproof_command = CommandHandler(
         'forwardproof', handlers.forward_proof_start, pass_args=True)
-    forwardproof = MessageHandler([], handlers.forward_proof)
+    forwardproof = MessageHandler(None, handlers.forward_proof)
     forwardproof_conversation = ConversationHandler(
         [forwardproof_command], {'enter_username': [forwardproof]},
         [cancel_command])
@@ -44,8 +44,8 @@ def main():
 
     newproof_command = CommandHandler(
         'newproof', handlers.newproof, pass_args=True)
-    kbusername_handler = MessageHandler([], handlers.make_json)
-    signed_block_regex = MessageHandler([], handlers.check_block)
+    kbusername_handler = MessageHandler(None, handlers.make_json)
+    signed_block_regex = MessageHandler(None, handlers.check_block)
     newproof_conversation = ConversationHandler([newproof_command], {
         'enter_kbusername': [kbusername_handler],
         'sign_block': [signed_block_regex]
@@ -62,11 +62,13 @@ def main():
         handlers.proof_message_handle,
         allow_edited=True)
     dispatcher.add_handler(proofmsg_handler)
-    othermsg_handler = MessageHandler([
-        Filters.audio, Filters.contact, Filters.document, Filters.location,
-        Filters.photo, Filters.sticker, Filters.venue, Filters.video,
-        Filters.voice
-    ], handlers.other_message_handle)
+    othermsg_handler = MessageHandler(
+        Filters.audio | Filters.contact | Filters.document | Filters.location |
+        Filters.photo | Filters.sticker | Filters.venue | Filters.video |
+        Filters.voice, handlers.other_message_handle)
     dispatcher.add_handler(othermsg_handler)
+
+    dispatcher.add_error_handler(
+        lambda bot, update, error: logging.error(error))
 
     updater.start_polling()
