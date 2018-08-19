@@ -25,4 +25,11 @@ spec:
         - name: DATABASE_USER
           value: keybaseproofs
         - name: DATABASE_DATABASE
-          value: keybaseproofbot
+          value: keybaseproofs
+        - name: GROUP_ID
+          value: "-1001097751738"
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: keybaseproofbot-database
+              key: password

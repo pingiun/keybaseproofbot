@@ -1,11 +1,10 @@
 import logging
+from telegram.ext import CommandHandler, ConversationHandler, Filters, InlineQueryHandler, MessageHandler, Updater
 
-from telegram.ext import CommandHandler, ConversationHandler, Filters, InlineQueryHandler, MessageHandler, RegexHandler, Updater
-
-from keybaseproofbot.database import db_session, init_db
 from keybaseproofbot import handlers
-from keybaseproofbot.filters import CustomFilter
 from keybaseproofbot.config import config
+from keybaseproofbot.database import init_db
+from keybaseproofbot.filters import CustomFilter
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -58,9 +57,9 @@ def main():
 
     # Group handlers:
     proofmsg_handler = MessageHandler(
-        [CustomFilter.supergrouptext],
+        CustomFilter.supergrouptext,
         handlers.proof_message_handle,
-        allow_edited=True)
+        edited_updates=True)
     dispatcher.add_handler(proofmsg_handler)
     othermsg_handler = MessageHandler(
         Filters.audio | Filters.contact | Filters.document | Filters.location |

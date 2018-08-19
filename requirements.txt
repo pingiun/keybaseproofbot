@@ -1,5 +1,5 @@
-python-gnupg==0.3.9
-python-telegram-bot==8.1.1
-requests==2.11.1
-sqlalchemy
-psycopg2
+pretty-bad-protocol==3.1.1
+python-telegram-bot==10.1.0
+requests==2.19.1
+SQLAlchemy==1.2.10
+psycopg2==2.7.5
